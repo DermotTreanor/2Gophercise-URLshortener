@@ -12,7 +12,17 @@ import (
 // http.Handler will be called instead.
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
 	//	TODO: Implement this...
-	return nil
+
+	my_val := func(rw http.ResponseWriter, r *http.Request){
+		//code to check the map
+
+		fallback.ServeHTTP(rw, r)
+	}
+
+
+	//I can't just send back the fallback because it's a ServeMux containing a HandlerFunc but
+	//it's not a HandlerFunc itself.
+	return my_val
 }
 
 // YAMLHandler will parse the provided YAML and then return
