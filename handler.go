@@ -2,27 +2,21 @@ package urlshort
 
 import (
 	"net/http"
+	"gopkg.in/yaml.v3"
 )
 
-// MapHandler will return an http.HandlerFunc (which also
-// implements http.Handler) that will attempt to map any
-// paths (keys in the map) to their corresponding URL (values
-// that each key in the map points to, in string format).
-// If the path is not provided in the map, then the fallback
-// http.Handler will be called instead.
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
-	//	TODO: Implement this...
-
-	my_val := func(rw http.ResponseWriter, r *http.Request){
-		//code to check the map
-
-		fallback.ServeHTTP(rw, r)
+	// Make a handler to call a redirect if our path is a key in the URLs map.
+	// Otherwise we call the fallback.
+	h := func(rw http.ResponseWriter, r *http.Request) {
+		p, ok := pathsToUrls[r.URL.Path]
+		if !ok {
+			fallback.ServeHTTP(rw, r)
+		} else {
+			http.Redirect(rw, r, p, http.StatusSeeOther)
+		}
 	}
-
-
-	//I can't just send back the fallback because it's a ServeMux containing a HandlerFunc but
-	//it's not a HandlerFunc itself.
-	return my_val
+	return h
 }
 
 // YAMLHandler will parse the provided YAML and then return
@@ -33,8 +27,8 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 //
 // YAML is expected to be in the format:
 //
-//     - path: /some-path
-//       url: https://www.some-url.com/demo
+//   - path: /some-path
+//     url: https://www.some-url.com/demo
 //
 // The only errors that can be returned all related to having
 // invalid YAML data.
@@ -43,5 +37,7 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 // a mapping of paths to urls.
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	// TODO: Implement this...
-	return nil, nil
+	ym := map[string]string{}
+	err := yaml.Unmarshal(yml, ym)
+	return MapHandler(ym, fallback), err 
 }
