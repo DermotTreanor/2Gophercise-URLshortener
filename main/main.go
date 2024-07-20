@@ -36,9 +36,9 @@ func main() {
 		data, err := openYAML(path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "main: could not read from file. Using internal data.\n%v\n", err)
+		}else{
+			yaml = yaml + string(data)
 		}
-		fmt.Printf("Here is the yaml data:\n%v\n", string(data))
-		yaml = yaml + string(data)
 	}
 	fmt.Printf("Here is the yaml data:\n%v\n", string(yaml))
 	
@@ -66,12 +66,25 @@ func openYAML(path string) (data []byte, err error) {
 		data, err = io.ReadAll(fp)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "openYAML: could not read in data: %v\n", err)
-			data = []byte{}
+			return []byte{}, err
+		}else{
+			return data, nil
 		}
 	} else {
-		fmt.Fprintln(os.Stderr, "We'll need to use a buffer.")
+		fmt.Fprintln(os.Stderr, "Using pointless buffer...")
+		buf := make([]byte, 50)
+		for {
+			n, err := fp.Read(buf) 
+			if err != nil && err != io.EOF{
+				fmt.Fprintf(os.Stderr, "openYAML: error while trying to buffer file data: %v\n", err)
+				return []byte{}, err
+			}
+			data = append(data, buf[:n]...)
+			if err == io.EOF{
+				return data, nil 
+			}
+		}
 	}
-	return data, err
 }
 
 func defaultMux() *http.ServeMux {

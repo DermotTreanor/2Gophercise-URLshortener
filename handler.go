@@ -41,3 +41,9 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	err := yaml.Unmarshal(yml, ym)
 	return MapHandler(ym, fallback), err 
 }
+
+
+func JSONHandler(js []byte, fallback http.Handler)(http.HandlerFunc, error){
+	mp := map[string]string{}
+	return MapHandler(mp, fallback), nil
+}
