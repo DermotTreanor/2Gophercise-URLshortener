@@ -36,18 +36,28 @@ func main() {
 		data, err := openYAML(path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "main: could not read from file. Using internal data.\n%v\n", err)
-		}else{
+		} else {
 			yaml = yaml + string(data)
 		}
 	}
 	fmt.Printf("Here is the yaml data:\n%v\n", string(yaml))
-	
+
 	yamlHandler, err := urlshort.YAMLHandler([]byte(yaml), mapHandler)
 	if err != nil {
 		panic(err)
 	}
+
+	jd := `{
+"/key1": "https://www.xkcd.com",
+    "/key2": "https://www.microsoft.com",
+    "/key3": "https://www.isitchristmas.com"
+}`
+	jsonHandler, err := urlshort.JSONHandler([]byte(jd), yamlHandler)
+	if err != nil {
+		fmt.Printf("main: encountered error when making json handler: %v\n", err)
+	}
 	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe(":8080", yamlHandler)
+	http.ListenAndServe(":8080", jsonHandler)
 }
 
 func openYAML(path string) (data []byte, err error) {
@@ -67,21 +77,21 @@ func openYAML(path string) (data []byte, err error) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "openYAML: could not read in data: %v\n", err)
 			return []byte{}, err
-		}else{
+		} else {
 			return data, nil
 		}
 	} else {
 		fmt.Fprintln(os.Stderr, "Using pointless buffer...")
 		buf := make([]byte, 50)
 		for {
-			n, err := fp.Read(buf) 
-			if err != nil && err != io.EOF{
+			n, err := fp.Read(buf)
+			if err != nil && err != io.EOF {
 				fmt.Fprintf(os.Stderr, "openYAML: error while trying to buffer file data: %v\n", err)
 				return []byte{}, err
 			}
 			data = append(data, buf[:n]...)
-			if err == io.EOF{
-				return data, nil 
+			if err == io.EOF {
+				return data, nil
 			}
 		}
 	}

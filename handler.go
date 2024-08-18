@@ -1,7 +1,9 @@
 package urlshort
 
 import (
+	"encoding/json"
 	"net/http"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -36,14 +38,13 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	// TODO: Implement this...
 	ym := map[string]string{}
 	err := yaml.Unmarshal(yml, ym)
-	return MapHandler(ym, fallback), err 
+	return MapHandler(ym, fallback), err
 }
 
-
-func JSONHandler(js []byte, fallback http.Handler)(http.HandlerFunc, error){
+func JSONHandler(js []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	mp := map[string]string{}
-	return MapHandler(mp, fallback), nil
+	err := json.Unmarshal(js, &mp)
+	return MapHandler(mp, fallback), err
 }
